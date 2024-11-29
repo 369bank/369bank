@@ -33,28 +33,20 @@ def calculate_indicators(df):
         df['high'] = df['high'].astype(float)
         df['low'] = df['low'].astype(float)
         df['close'] = df['close'].astype(float)
-        # After converting columns to float
-        logger.debug(f"Data types after conversion: {df.dtypes}")
         
         # Parabolic SAR
         psar_indicator = ta.trend.PSARIndicator(
             high=df['high'], low=df['low'], close=df['close'], step=0.02, max_step=0.2
         )
-        # Before calculating PSAR
-
-        logger.debug(f"Data before PSAR calculation:\n{df[['high', 'low', 'close']].tail()}")
+        # Calculating PSAR
         df['PSAR'] = psar_indicator.psar()
-
-        # After calculating PSAR
-        logger.debug(f"PSAR values:\n{df[['PSAR']].tail()}")
-        
+      
         # Determine PSAR trend direction
         df['PSAR_trend'] = 0
         df.loc[df['PSAR'] < df['close'], 'PSAR_trend'] = 1  # Bullish trend
         df.loc[df['PSAR'] > df['close'], 'PSAR_trend'] = -1  # Bearish trend
 
         # After determining PSAR trend
-        logger.debug(f"PSAR values:\n{df[['timestamp', 'PSAR']].tail()}")
         logger.debug(f"PSAR trend values:\n{df[['timestamp', 'PSAR_trend']].tail()}")
 
         # Stochastic Oscillators with multiple window settings

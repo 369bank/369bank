@@ -193,6 +193,6 @@ if __name__ == "__main__":
     # Scenario A: Data capture starts immediately upon running the program.
     # Scenario B: Data capture starts at the commencement of the next hour.
 
-    scenario = 'A'  # Change to 'B' for Scenario B
+    scenario = 'B'  # Change to 'B' for Scenario B
 
     schedule_data_fetches(product_ids, granularity, limit, scenario)
