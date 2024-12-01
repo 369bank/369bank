@@ -3,11 +3,19 @@
 import pandas as pd
 import logging
 import os
-from datetime import datetime, timezone
-from config.config import STRATEGY_1, BUY_AMOUNTS, CAPTURE_STRATEGY1_DATA
+import time
+from datetime import datetime, timezone, timedelta
+from config.config import (
+    STRATEGY_1, BUY_AMOUNTS, CAPTURE_STRATEGY1_DATA, TICKERS,
+    DB_FILE, SCENARIO
+)
 from trade_executor import place_order
 from risk_manager import check_risk_management
-from db_manager import log_strategy1_data
+from db_manager import log_strategy1_data, log_error
+from indicators import calculate_indicators
+import threading
+import schedule
+import sqlite3
 
 # Configure logging
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,7 +27,7 @@ from logging.handlers import RotatingFileHandler
 
 log_file = os.path.join(LOGS_DIR, 'strategy1.log')
 logger = logging.getLogger('strategy1')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(
     log_file, maxBytes=5 * 1024 * 1024, backupCount=5
 )
@@ -43,14 +51,9 @@ def strategy1(df, ticker):
         logger.warning(f"No data available for {ticker} in Strategy 1.")
         return
 
-    # Verify that 'PSAR' and 'PSAR_trend' are in the DataFrame
-    if 'PSAR' not in df.columns or 'PSAR_trend' not in df.columns:
-        logger.error(f"PSAR indicators not found in DataFrame for {ticker}.")
-        return
-
-    # Check if required indicators are present
+    # Verify that required indicators are in the DataFrame
     required_indicators = [
-        'PSAR_trend',  # Updated column name
+        'PSAR_trend',
         'STOCH_K_9_3', 'STOCH_K_14_3', 'STOCH_K_40_4', 'STOCH_K_60_10_1',
         'BB_percent_b'
     ]
@@ -109,4 +112,72 @@ def strategy1(df, ticker):
     # All conditions met, place a buy order
     logger.info(f"Strategy 1 conditions met for {ticker}. Placing buy order.")
     amount = BUY_AMOUNTS.get(ticker, STRATEGY_1['default_buy_amount'])
-    place_order(ticker, side='BUY', amount=amount, strategy='Strategy 1')
+    place_order(
+        ticker=ticker,
+        side='BUY',
+        amount=amount,
+        strategy='Strategy 1',
+        order_type='limit',
+        time_in_force='GTC',
+        make_order=True  # Ensures it's a maker order
+    )
+
+def fetch_and_execute_strategy1(ticker, scenario=SCENARIO):
+    """
+    Fetch data and execute Strategy 1.
+
+    :param ticker: str, the trading pair
+    :param scenario: str, 'A' or 'B'
+    """
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        df = pd.read_sql_query(f"SELECT * FROM candlesticks_{ticker.replace('-', '_')} ORDER BY timestamp ASC", conn)
+        conn.close()
+
+        if df.empty:
+            logger.warning(f"No data for {ticker}. Skipping Strategy 1.")
+            return
+
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+
+        # Calculate indicators
+        df = calculate_indicators(df)
+
+        # Execute the strategy
+        strategy1(df, ticker)
+    except Exception as e:
+        logger.error(f"Error in Strategy 1 for {ticker}: {e}")
+        log_error(str(e))
+
+def schedule_strategy1(scenario=SCENARIO):
+    """
+    Schedule Strategy 1 to run at specified times.
+    For Scenario A, execute immediately.
+    For Scenario B, schedule at specific times.
+    """
+    tickers = TICKERS  # Define your tickers list in config
+
+    if scenario == 'A':
+        # Scenario A: Execute immediately and then every 15 minutes
+        run_strategy1_for_all_tickers(scenario='A')
+        schedule.every(15).minutes.at("00:00").do(run_strategy1_for_all_tickers, scenario='A')
+    elif scenario == 'B':
+        # Schedule for Scenario B at specific times
+        times = ["14:45", "29:45", "44:45", "59:45"]
+        for t in times:
+            schedule.every().hour.at(t).do(run_strategy1_for_all_tickers, scenario='B')
+    else:
+        logger.error(f"Invalid scenario '{scenario}' specified for Strategy 1.")
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+def run_strategy1_for_all_tickers(scenario=SCENARIO):
+    tickers = TICKERS  # Define your tickers list in config
+    for ticker in tickers:
+        fetch_and_execute_strategy1(ticker, scenario)
+
+# Start the scheduler in a separate thread if necessary
+if __name__ == "__main__":
+    threading.Thread(target=schedule_strategy1).start()

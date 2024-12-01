@@ -4,6 +4,8 @@ from email.mime.text import MIMEText
 from config.config import EMAIL_ADDRESS, EMAIL_PASSWORD, PHONE_NUMBER
 import logging
 import os
+from twilio.rest import Client
+from config.config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, PHONE_NUMBER
 
 # Configure logging
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -34,27 +36,13 @@ def send_email(subject, body):
         logging.error(f"Failed to send email: {e}")
 
 def send_sms(message):
-    """
-    Send SMS using email-to-SMS gateway.
-
-    Note: This depends on the recipient's mobile carrier.
-    Adjust the gateway domain as per the recipient's carrier.
-    """
-    # Replace with the correct email-to-SMS gateway domain for your carrier
-    carrier_gateway = 'optusmobile.com.au'  # Example for Optus in Australia
-    sms_address = f"{PHONE_NUMBER}@{carrier_gateway}"
-
-    msg = MIMEText(message)
-    msg['Subject'] = ''
-    msg['From'] = EMAIL_ADDRESS
-    msg['To'] = sms_address
-
+    client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     try:
-        # Send the SMS via SMTP server
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.send_message(msg)
-        logging.info(f"SMS sent to {PHONE_NUMBER}: {message}")
+        message = client.messages.create(
+            body=message,
+            from_=TWILIO_PHONE_NUMBER,
+            to=PHONE_NUMBER
+        )
+        logging.info(f"SMS sent to {PHONE_NUMBER}: {message.sid}")
     except Exception as e:
         logging.error(f"Failed to send SMS: {e}")
