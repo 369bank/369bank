@@ -27,7 +27,13 @@ COINBASE_PRIVATE_KEY = os.getenv('COINBASE_PRIVATE_KEY')  # Updated
 SANDBOX_MODE = os.getenv('SANDBOX_MODE', 'True').lower() == 'true'
 EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 PHONE_NUMBER = os.getenv('PHONE_NUMBER')
+PHONE_NUMBER = os.getenv('PHONE_NUMBER')
+
+
 
 # Database file path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,11 +97,14 @@ STRATEGY_2 = {
   'sell_after_candles': 8  # Sell after 8th 1-hour candle
 }
 
+# Scenario configuration ('A' or 'B') - A immediate, B starts on the hour.
+SCENARIO = 'A'  # Change to 'B' as needed
+
 # List of tickers
 TICKERS = [
-    'LTC-USD', 'PEPE-USD', 'SHIB-USD', 'ETH-USD',
-    'DOGE-USD', 'SOL-USD', 'XRP-USD', 'BTC-USD',
-    'SUI-USD', 'XLM-USD', 'ADA-USD', 'LINK-USD', 'AVAX-USD'
+    'LTC-USD', 'PEPE-USD', 'SHIB-USD', 'ETH-USD', 'DOGE-USD',
+    'SOL-USD', 'XRP-USD', 'BTC-USD', 'SUI-USD', 'XLM-USD',
+    'ADA-USD', 'LINK-USD', 'AVAX-USD'
 ]
 
 BUY_AMOUNTS = {
