@@ -160,7 +160,8 @@ def schedule_strategy1(scenario=SCENARIO):
     if scenario == 'A':
         # Scenario A: Execute immediately and then every 15 minutes
         run_strategy1_for_all_tickers(scenario='A')
-        schedule.every(15).minutes.at("00:00").do(run_strategy1_for_all_tickers, scenario='A')
+        schedule.every(15).minutes.at(":00").do(run_strategy1_for_all_tickers, scenario='A')
+
     elif scenario == 'B':
         # Schedule for Scenario B at specific times
         times = ["14:45", "29:45", "44:45", "59:45"]

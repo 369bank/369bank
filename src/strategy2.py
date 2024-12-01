@@ -200,7 +200,7 @@ def execute_strategy(ticker, scenario=SCENARIO):
                 conn.commit()
                 logger.debug(f"Updated data for {ticker} at step {step_label} (ID {row_id}).")
 
-                 logger.info(f"Executed Strategy 2 for {ticker} at step {step_label}.")
+                logger.info(f"Executed Strategy 2 for {ticker} at step {step_label}.")
 
                 # Calculate the ratio
                 close_price = latest_data['close']
