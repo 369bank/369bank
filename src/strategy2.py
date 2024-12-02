@@ -158,13 +158,13 @@ def execute_strategy(ticker, scenario=SCENARIO):
             # Initialize variables
             monitoring_steps = [
                 {'wait': 300,  'threshold': 0.90, 'granularity': 300, 'step': '5m'},   # 5 minutes
-                {'wait': 300,  'threshold': 0.95, 'granularity': 600, 'step': '10m'},  # 10 minutes
-                {'wait': 300,  'threshold': 0.95, 'granularity': 900, 'step': '15m'},  # 15 minutes
-                {'wait': 300,  'threshold': 0.95, 'granularity': 1200, 'step': '20m'}, # 20 minutes
-                {'wait': 300,  'threshold': 0.95, 'granularity': 1500, 'step': '25m'}, # 25 minutes
-                {'wait': 300,  'threshold': 0.95, 'granularity': 1800, 'step': '30m'}, # 30 minutes
-                {'wait': 600,  'threshold': 0.95, 'granularity': 2400, 'step': '40m'}, # 40 minutes
-                {'wait': 600,  'threshold': 0.94, 'granularity': 3000, 'step': '50m'}, # 50 minutes
+                {'wait': 300,  'threshold': 0.95, 'granularity': 300, 'step': '10m'},  # 10 minutes
+                {'wait': 300,  'threshold': 0.95, 'granularity': 300, 'step': '15m'},  # 15 minutes
+                {'wait': 300,  'threshold': 0.95, 'granularity': 300, 'step': '20m'}, # 20 minutes
+                {'wait': 300,  'threshold': 0.95, 'granularity': 300, 'step': '25m'}, # 25 minutes
+                {'wait': 300,  'threshold': 0.95, 'granularity': 300, 'step': '30m'}, # 30 minutes
+                {'wait': 600,  'threshold': 0.95, 'granularity': 300, 'step': '40m'}, # 40 minutes
+                {'wait': 600,  'threshold': 0.94, 'granularity': 300, 'step': '50m'}, # 50 minutes
             ]
 
             for step in monitoring_steps:
