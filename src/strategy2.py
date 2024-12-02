@@ -275,6 +275,7 @@ def execute_strategy(ticker, scenario=SCENARIO):
                 conn.commit()
                 logger.info(f"{ticker}: Updated final high, low, close values.")
 
+            # Close the database connection
             conn.close()
 
             # Positions are closed separately after 8 hours from entry
@@ -303,6 +304,13 @@ def execute_strategy(ticker, scenario=SCENARIO):
                 else:
                     logger.error(f"{ticker}: Failed to close position.")
 
+            # **Add this block to wait until the start of the next hour**
+            now = datetime.utcnow()
+            seconds_to_wait = ((60 - now.minute) % 60) * 60 - now.second - now.microsecond / 1e6
+            if seconds_to_wait > 0:
+                logger.info(f"{ticker}: Waiting {seconds_to_wait} seconds until the start of the next hour.")
+                time.sleep(seconds_to_wait)
+
         except Exception as e:
             logger.error(f"An error occurred while executing Strategy 2 for {ticker}: {e}")
             logger.debug(f"Stack Trace: {traceback.format_exc()}")
@@ -313,10 +321,10 @@ def manage_order(ticker, order_id):
     Manages the order according to the specified order management rules.
     """
     try:
-        # Wait 2 minutes and check if the order is filled
-        time.sleep(120)
+        # Wait 2.8 minutes and check if the order is filled
+        time.sleep(170)
         if not is_order_filled(order_id):
-            logger.info(f"{ticker}: Order not fully filled after 2 minutes. Cancelling order.")
+            logger.info(f"{ticker}: Order not fully filled after 3 minutes. Cancelling order.")
             cancel_order(order_id)
             # Proceed with any filled amount
         else:
